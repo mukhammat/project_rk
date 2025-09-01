@@ -1,8 +1,7 @@
 import 'dotenv/config'
 
 import {
-    getImage,
-    convertAvifToJpeg,
+    getImages,
     getProducts,
     filterProducts
 } from './services/index.js';
@@ -18,24 +17,31 @@ const app = new Hono()
 .use(logger())
 
 app.get('/modest-products', async (c) => {
-    const products = await getProducts();
+    const b = Date.now();
+    const { images, products } = await getProducts();
+    const a = Date.now();
+    console.log('Получения товаров', a - b);
 
+    
+    const b1 = Date.now();
+    const base64 = await getImages(images);
     const datas = [];
 
-    for (const product of products) {
-        const imageBuffer = await getImage(`http://${product.imageUrl}`);
-        const convertedBuffer = await convertAvifToJpeg(imageBuffer);
-
-        datas.push({
-            data: {
-                image: {
-                    base64: convertedBuffer.toString('base64')
-                }
+    base64.forEach(base64 => datas.push({
+        data: {
+            image: {
+                base64
             }
-        })
-    }
+        }
+    }))
+    
+    const a1 = Date.now();
+    console.log('Скачивания изображения и форматирования на base64', a1 - b1);
 
+    const befor = Date.now();
     const aiResult = await filterProducts(datas);
+    const after = Date.now();
+    console.log('Фильтрация ии', after - befor);
 
     const filteredProductsData = [];
    
@@ -62,5 +68,5 @@ app
 
 serve({
     fetch: app.fetch,
-    port: 8000
+    port: 8000,
 })

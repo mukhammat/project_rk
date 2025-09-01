@@ -1,20 +1,16 @@
-import sharp from 'sharp';
 import { CustomError } from '../errors/custom.error.js'
 
-export const getImage = async (imageUrl) => {
-    const response = await fetch(imageUrl);
-    const buffer = await response.arrayBuffer();
-    return buffer;
+export const getImages = async (imagesUrls) => {
+    const buffers = await Promise.all(
+        imagesUrls.map(async url => {
+            const res = await fetch(`https://${url}`);
+            const arrayBuffer = await res.arrayBuffer();
+            return Buffer.from(arrayBuffer).toString("base64");
+        })
+    );
+
+    return buffers;
 }
-
-
-export const convertAvifToJpeg = async (inputPath) => {
-    const buffer = await sharp(inputPath)
-    .jpeg({ quality: 90 })
-    .toBuffer();
-
-    return buffer;
-};
 
 
 export const getProducts = async () => {
@@ -43,6 +39,7 @@ export const getProducts = async () => {
     const products = data.products;
 
     let result = [];
+    let images = [];
 
     for (const product of products) {
         result.push({
@@ -51,9 +48,10 @@ export const getProducts = async () => {
             url: product.url,
             imageUrl: product.imageUrl
         });
+        images.push(product.imageUrl)
     }
 
-    return result;
+    return {products: result, images};
 }
 
 
@@ -84,8 +82,6 @@ export const filterProducts = async (imagesUrls) => {
     if (response.status.code !== 10000) {
         throw new CustomError(response.status.description);
     }
-
-    console.log(response)
 
     return response;
 }
