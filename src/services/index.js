@@ -1,8 +1,6 @@
 import sharp from 'sharp';
 import { CustomError } from '../errors/custom.error.js'
 
-console.log(process.env);
-
 export const getImage = async (imageUrl) => {
     const response = await fetch(imageUrl);
     const buffer = await response.arrayBuffer();
@@ -27,11 +25,16 @@ export const getProducts = async () => {
      * categoryId=8799 (например, для платьев)
      * limit=30
      */
-    const response = await fetch('https://asos2.p.rapidapi.com/products/v2/list?store=US&offset=0&categoryId=8799&limit=30', {
+    const {X_RapidAPI_Key, X_RapidAPI_Host} = process.env;
+    if(!X_RapidAPI_Host || !X_RapidAPI_Key) {
+        throw new CustomError('Нет X_RapidAPI_Host или X_RapidAPI_Key');
+    }
+
+    const response = await fetch('https://asos2.p.rapidapi.com/products/v2/list?store=US&offset=2&categoryId=8799&limit=30', {
         method: 'GET',
         headers: {
-            'X-RapidAPI-Key': process.env.X_RapidAPI_Key,
-            'X-RapidAPI-Host': process.env.X_RapidAPI_Host
+            'X-RapidAPI-Key': X_RapidAPI_Key,
+            'X-RapidAPI-Host': X_RapidAPI_Host
         }
     });
 

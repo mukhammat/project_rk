@@ -8,10 +8,14 @@ import {
 } from './services/index.js';
 
 import { Hono } from 'hono';
+import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
 import { serve } from '@hono/node-server';
 import { errorHandler } from './middlewares/error-handler.js'
 
-const app = new Hono();
+const app = new Hono()
+.use(cors())
+.use(logger())
 
 app.get('/modest-products', async (c) => {
     const products = await getProducts();
@@ -50,9 +54,11 @@ app.get('/modest-products', async (c) => {
     }
 
     return c.json({ products: filteredProductsData });
-});
-app.notFound(c => c.text('Custom 404 Message', 404))
-app.onError(errorHandler)
+})
+
+app
+.notFound(c => c.text('Custom 404 Message', 404))
+.onError(errorHandler)
 
 serve({
     fetch: app.fetch,

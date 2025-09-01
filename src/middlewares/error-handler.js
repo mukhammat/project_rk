@@ -5,6 +5,7 @@ import { CustomError } from "../errors/custom.error.js";
  * @type import('hono').ErrorHandler
  */
 export const errorHandler = async (err, c) => {
+  console.log(err);
   let message = 'Ошибка сервера';
   let status = 500;
 
