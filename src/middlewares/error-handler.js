@@ -4,8 +4,7 @@ import { CustomError } from "../errors/custom.error.js";
  * 
  * @type import('hono').ErrorHandler
  */
-export const errorHandler = async (err, c) => {
-  console.log(err);
+export const errorHandler = async (err, _, res, next) => {
   let message = 'Ошибка сервера';
   let status = 500;
 
@@ -14,7 +13,8 @@ export const errorHandler = async (err, c) => {
     status = err.statusCode;
   }
   
-  return c.json({
-    message: message,
-  }, status)
+  res.status(status).json({
+    message,
+  });
+  return;
 }
