@@ -1,4 +1,3 @@
-import 'dotenv/config'
 
 import {
     getImages,
@@ -9,23 +8,32 @@ import {
 import express from 'express';
 import cors from 'cors';
 
-import { errorHandler } from './middlewares/error-handler.js'
+const PORT = 8000
 
 const app = express()
-.use(cors())
 
-app.get('/modest-products', async (_, res, next) => {
+
+
+app.use(cors())
+app.use(express.json())
+
+app.get('/modest-products', async (req, res) => {
     try {
         const b = Date.now();
-        const { images, products } = await getProducts();
+        let { images, products } = await getProducts();
         const a = Date.now();
-        console.log('Получения товаров', a - b);
-    
-        
+
+        // Это для теста
+        // products = [products[0]];
+        // images = ["images.asos-media.com/products/bardot-corsage-ruffle-mini-dress-in-chocolate/209257191-1-chocolate", "https://images.asos-media.com/products/miss-selfridge-tailored-collar-mini-dress-in-mixed-plaid/208582092-1-mixedcheck"];
+
+        console.log('Получения товаров', products?.length);
+
+
         const b1 = Date.now();
         const base64 = await getImages(images);
         const datas = [];
-    
+
         base64.forEach(base64 => datas.push({
             data: {
                 image: {
@@ -33,41 +41,41 @@ app.get('/modest-products', async (_, res, next) => {
                 }
             }
         }))
-        
+
         const a1 = Date.now();
-        console.log('Скачивания изображения и форматирования на base64', a1 - b1);
-    
-        const befor = Date.now();
+        console.log('Скачивания изображения и форматирования на base64', datas?.length);
+
+
+        const before = Date.now();
         const aiResult = await filterProducts(datas);
         const after = Date.now();
-        console.log('Фильтрация ии', after - befor);
-    
+        console.log('Фильтрация ии', after - before);
+
+
         const filteredProductsData = [];
-       
-        for(let i = 0; i < products.length; i++) {
+
+        for (let i = 0; i < products.length; i++) {
             const data = aiResult?.outputs[i]?.data;
             const concepts = data?.concepts;
-            
-    
-            if(data && concepts) {
+
+
+            if (data && concepts) {
                 const modest = concepts.find(c => c.name === "modestdresses");
-    
+
                 if (modest && modest.value > 0.9) {
                     filteredProductsData.push(products[i]);
                 }
             }
         }
-    
+
         res.status(200).json({ products: filteredProductsData });
         return;
     } catch (err) {
-        next(err)
+        res.status(500).json({ message: err.message });
     }
 })
 
-app.use((_, req) => req.status(404).json('Custom 404 Message'))
-app.use(errorHandler)
 
-app.listen(8000, () => {
-    console.log('Сервер запущен на порту 8000')
+app.listen(PORT, () => {
+    console.log(`Сервер запущен на порту ${PORT}`)
 });

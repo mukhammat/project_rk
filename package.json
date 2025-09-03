@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon"
+    "start": "pm2 start index.js --name project_rk",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
